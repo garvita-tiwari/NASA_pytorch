@@ -10,5 +10,5 @@ cd /BS/garvita/work/code/NASA_pytorch
 source /BS/garvita/static00/software/miniconda3/etc/profile.d/conda.sh
 conda activate if-net_10
 
-python trainer.py --models D
+python trainer.py --models D -mw 0.0
 

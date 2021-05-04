@@ -1,26 +1,15 @@
 import trimesh
 import numpy as np
-import glob
-import multiprocessing as mp
-from multiprocessing import Pool
+
 import argparse
-import os
-import traceback
-import ipdb
-import pickle as pkl
-import torch.nn as nn
+
 import torch
-from kaolin.metrics.mesh import point_to_surface, laplacian_loss, TriangleDistance
-from kaolin.metrics.point import SidedDistance
-from kaolin.rep import TriangleMesh as tm
 
 from geo_utils import normalize_y_rotation
 from psbody.mesh import Mesh, MeshViewer
-from scipy.spatial.transform import Rotation as R
 
 import os
 import pickle as pkl
-import igl
 import sys
 sys.path.append('/BS/garvita/work/code/cloth_static/TailorNet')
 sys.path.append('/BS/garvita/work/code/if-net/data_processing')
@@ -29,24 +18,31 @@ import ipdb
 
 from models.torch_smpl4garment import TorchSMPL4Garment
 ROOT = '/BS/garvita2/static00/cloth_seq/upper_gar/WIDC102'
-nasa_data_dir = '/BS/cloth3d/static00/nasa_data/smpl_pose/train_data'
-if not os.path.exists(nasa_data_dir):
-    os.makedirs(nasa_data_dir)
 
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(
         description='Run boundary sampling'
     )
-    parser.add_argument('-frame', type=int)
+    parser.add_argument('-frame', default=0 ,type=int)
+    parser.add_argument('-beta_file', '--beta_file', default='/BS/cloth-anim/static00/tailor_data/shirt_male/shape/beta_000.npy',
+                        type=str)
+    parser.add_argument('-pose_file', '--pose_file', default='/BS/RVH/work/data/people_completion/poses/SMPL/female.pkl',
+                        type=str)
+    parser.add_argument('-out_dir', '--out_dir', default='/BS/cloth3d/static00/nasa_data/smpl_pose/train_data',
+                        type=str)
 
     args = parser.parse_args()
 
-    pose_file = '/BS/RVH/work/data/people_completion/poses/SMPL/female.pkl'
+    nasa_data_dir = args.out_dir
+    if not os.path.exists(nasa_data_dir):
+        os.makedirs(nasa_data_dir)
+
+    pose_file = args.pose_file
     poses = pkl.load(open(pose_file, 'rb'), encoding="latin1")
     smpl_torch = TorchSMPL4Garment('female')
     sample_num = 1000000
-    beta = np.load('/BS/cloth-anim/static00/tailor_data/shirt_male/shape/beta_{:03}.npy'.format(args.frame))
+    beta = np.load(args.beta_file)
     sub_id = '{:03}'.format(args.frame)
 
     sub_folder  =os.path.join(nasa_data_dir, sub_id)
